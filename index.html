@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Sacaria</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.0"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -86,12 +87,51 @@
     
     <!-- Formulário para preencher os dados -->
     <form id="sacariaForm">
-        <!-- [O conteúdo do formulário permanece o mesmo] -->
+        <label for="data">Data:</label>
+        <input type="date" id="data" required>
+
+        <label for="turno">Turno:</label>
+        <select id="turno" required>
+            <option value="A">A</option>
+            <option value="B">B</option>
+        </select>
+
+        <label for="op">OP (formato xxx.xxx/xx.xx):</label>
+        <input type="text" id="op" pattern="\d{3}\.\d{3}\/\d{2}\.\d{2}" title="Formato: xxx.xxx/xx.xx" required>
+
+        <label for="cliente">Cliente:</label>
+        <input type="text" id="cliente" required>
+
+        <label for="quantidade">Quantidade de Sacos de Primeira:</label>
+        <input type="number" id="quantidade" required>
+
+        <label for="maquina">Número da Máquina:</label>
+        <select id="maquina" required>
+            <option value="AC-01">AC-01</option>
+            <option value="AC-02">AC-02</option>
+            <!-- Adicione todas as opções até AC-28 -->
+        </select>
+
+        <label for="revisora">Nome da Revisora:</label>
+        <input type="text" id="revisora" required>
+
+        <button type="submit">Salvar</button>
     </form>
 
     <h2>Lista de Sacarias</h2>
     <table border="1">
-        <!-- [A tabela permanece a mesma] -->
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Turno</th>
+                <th>OP</th>
+                <th>Cliente</th>
+                <th>Quantidade</th>
+                <th>Máquina</th>
+                <th>Revisora</th>
+            </tr>
+        </thead>
+        <tbody id="sacariaTableBody"></tbody>
     </table>
 
     <button id="downloadCSV">Download CSV</button>
@@ -103,12 +143,57 @@
     <label for="endDate">Fim:</label>
     <input type="date" id="endDate">
     <button id="filterGraph">Filtrar</button>
+
     <canvas id="sacariaChart" width="400" height="200"></canvas>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const sacariaChart = document.getElementById('sacariaChart');
             let sacariaData = JSON.parse(localStorage.getItem('sacariaData')) || [];
+
+            // Função para salvar os dados no localStorage
+            function saveData(data) {
+                sacariaData.push(data);
+                localStorage.setItem('sacariaData', JSON.stringify(sacariaData));
+                renderTable();
+                updateChart();
+                document.getElementById('sacariaForm').reset(); // Limpa os campos após salvar
+            }
+
+            // Função para renderizar a tabela de dados
+            function renderTable() {
+                const tableBody = document.getElementById('sacariaTableBody');
+                tableBody.innerHTML = '';
+                sacariaData.sort((a, b) => new Date(b.data) - new Date(a.data)); // Ordenar por data decrescente
+                sacariaData.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.data}</td>
+                        <td>${item.turno}</td>
+                        <td>${item.op}</td>
+                        <td>${item.cliente}</td>
+                        <td>${item.quantidade}</td>
+                        <td>${item.maquina}</td>
+                        <td>${item.revisora}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            // Função para baixar a tabela em formato CSV
+            function downloadCSVFile() {
+                let csv = 'Data,Turno,OP,Cliente,Quantidade,Máquina,Revisora\n';
+                sacariaData.forEach(item => {
+                    csv += `${item.data},${item.turno},${item.op},${item.cliente},${item.quantidade},${item.maquina},${item.revisora}\n`;
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'sacaria.csv';
+                a.click();
+            }
 
             // Função para agrupar dados por dia e somar a quantidade
             function groupDataByDay(filteredData) {
@@ -192,8 +277,30 @@
                     updateChart(filteredData);
                 }
             });
+
+            // Evento de submissão do formulário
+            const sacariaForm = document.getElementById('sacariaForm');
+            sacariaForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const data = document.getElementById('data').value;
+                const turno = document.getElementById('turno').value;
+                const op = document.getElementById('op').value;
+                const cliente = document.getElementById('cliente').value;
+                const quantidade = parseInt(document.getElementById('quantidade').value);
+                const maquina = document.getElementById('maquina').value;
+                const revisora = document.getElementById('revisora').value;
+
+                const newEntry = { data, turno, op, cliente, quantidade, maquina, revisora };
+                saveData(newEntry);
+            });
+
+            // Botão de download de CSV
+            const downloadCSVButton = document.getElementById('downloadCSV');
+            downloadCSVButton.addEventListener('click', downloadCSVFile);
+
+            // Renderizar a tabela de dados ao carregar a página
+            renderTable();
         });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.0"></script>
 </body>
 </html>
