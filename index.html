@@ -84,7 +84,7 @@
         </select><br><br>
 
         <label for="op">OP (xxx.xxx/xx.xx):</label>
-        <input type="text" id="op" pattern="\d{3}\.\d{3}/\d{2}\.\d{2}" required><br><br>
+        <input type="text" id="op" maxlength="13" required><br><br>
 
         <label for="cliente">Cliente:</label>
         <input type="text" id="cliente" required><br><br>
@@ -136,8 +136,24 @@
             const sacariaList = document.getElementById('sacariaList');
             const downloadCSV = document.getElementById('downloadCSV');
             const sacariaChart = document.getElementById('sacariaChart');
+            const opInput = document.getElementById('op');
             
             let sacariaData = JSON.parse(localStorage.getItem('sacariaData')) || [];
+
+            // Função para formatar automaticamente o campo OP
+            opInput.addEventListener('input', function() {
+                let value = opInput.value.replace(/\D/g, ''); // Remove tudo que não for número
+                if (value.length > 6) {
+                    value = value.slice(0, 6) + '/' + value.slice(6);
+                }
+                if (value.length > 10) {
+                    value = value.slice(0, 9) + '.' + value.slice(9);
+                }
+                if (value.length > 3) {
+                    value = value.slice(0, 3) + '.' + value.slice(3);
+                }
+                opInput.value = value;
+            });
 
             // Função para salvar dados localmente
             function saveData(data) {
@@ -146,6 +162,7 @@
                 localStorage.setItem('sacariaData', JSON.stringify(sacariaData));
                 renderTable();
                 updateChart();
+                form.reset(); // Limpa todos os campos após salvar
             }
 
             // Função para renderizar a tabela de dados
@@ -216,7 +233,6 @@
                 };
 
                 saveData(data);
-                form.reset();
             });
 
             downloadCSV.addEventListener('click', downloadCSVFile);
