@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Sacaria</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        form label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        form input, form select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+
+        form button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        #downloadCSV {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        canvas {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Controle de Sacaria</h1>
+    
+    <!-- Formulário para preencher os dados -->
+    <form id="sacariaForm">
+        <label for="data">Data:</label>
+        <input type="date" id="data" required><br><br>
+
+        <label for="turno">Turno:</label>
+        <select id="turno" required>
+            <option value="A">A</option>
+            <option value="B">B</option>
+        </select><br><br>
+
+        <label for="op">OP (xxx.xxx/xx.xx):</label>
+        <input type="text" id="op" pattern="\d{3}\.\d{3}/\d{2}\.\d{2}" required><br><br>
+
+        <label for="cliente">Cliente:</label>
+        <input type="text" id="cliente" required><br><br>
+
+        <label for="quantidade">Quantidade de sacos de primeira:</label>
+        <input type="number" id="quantidade" min="1" required><br><br>
+
+        <label for="maquina">Número da máquina:</label>
+        <select id="maquina" required>
+            <option value="" disabled selected>Selecione</option>
+            <script>
+                for (let i = 1; i <= 28; i++) {
+                    let value = 'AC-' + (i < 10 ? '0' + i : i);
+                    document.write(`<option value="${value}">${value}</option>`);
+                }
+            </script>
+        </select><br><br>
+
+        <label for="revisora">Nome da revisora:</label>
+        <input type="text" id="revisora" required><br><br>
+
+        <button type="submit">Salvar</button>
+    </form>
+
+    <h2>Lista de Sacarias</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Turno</th>
+                <th>OP</th>
+                <th>Cliente</th>
+                <th>Quantidade</th>
+                <th>Máquina</th>
+                <th>Revisora</th>
+            </tr>
+        </thead>
+        <tbody id="sacariaList"></tbody>
+    </table>
+
+    <button id="downloadCSV">Download CSV</button>
+
+    <h2>Gráfico - Quantidade de Sacaria de Primeira</h2>
+    <canvas id="sacariaChart" width="400" height="200"></canvas>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('sacariaForm');
+            const sacariaList = document.getElementById('sacariaList');
+            const downloadCSV = document.getElementById('downloadCSV');
+            const sacariaChart = document.getElementById('sacariaChart');
+            
+            let sacariaData = JSON.parse(localStorage.getItem('sacariaData')) || [];
+
+            // Função para salvar dados localmente
+            function saveData(data) {
+                sacariaData.push(data);
+                sacariaData.sort((a, b) => new Date(b.data) - new Date(a.data));
+                localStorage.setItem('sacariaData', JSON.stringify(sacariaData));
+                renderTable();
+                updateChart();
+            }
+
+            // Função para renderizar a tabela de dados
+            function renderTable() {
+                sacariaList.innerHTML = '';
+                sacariaData.forEach(item => {
+                    const row = sacariaList.insertRow();
+                    row.innerHTML = `
+                        <td>${item.data}</td>
+                        <td>${item.turno}</td>
+                        <td>${item.op}</td>
+                        <td>${item.cliente}</td>
+                        <td>${item.quantidade}</td>
+                        <td>${item.maquina}</td>
+                        <td>${item.revisora}</td>
+                    `;
+                });
+            }
+
+            // Função para gerar o CSV
+            function downloadCSVFile() {
+                let csv = 'Data,Turno,OP,Cliente,Quantidade,Máquina,Revisora\n';
+                sacariaData.forEach(row => {
+                    csv += `${row.data},${row.turno},${row.op},${row.cliente},${row.quantidade},${row.maquina},${row.revisora}\n`;
+                });
+                
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.setAttribute('href', url);
+                a.setAttribute('download', 'sacaria_data.csv');
+                a.click();
+            }
+
+            // Função para atualizar o gráfico
+            function updateChart() {
+                const dates = sacariaData.map(item => item.data);
+                const quantities = sacariaData.map(item => item.quantidade);
+
+                const ctx = sacariaChart.getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'Quantidade de Sacaria de Primeira',
+                            data: quantities,
+                            borderColor: 'blue',
+                            borderWidth: 2,
+                            fill: false
+                        }]
+                    }
+                });
+            }
+
+            // Evento de submissão do formulário
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                
+                const data = {
+                    data: document.getElementById('data').value,
+                    turno: document.getElementById('turno').value,
+                    op: document.getElementById('op').value,
+                    cliente: document.getElementById('cliente').value,
+                    quantidade: parseInt(document.getElementById('quantidade').value),
+                    maquina: document.getElementById('maquina').value,
+                    revisora: document.getElementById('revisora').value
+                };
+
+                saveData(data);
+                form.reset();
+            });
+
+            downloadCSV.addEventListener('click', downloadCSVFile);
+
+            // Inicializar a tabela e gráfico ao carregar a página
+            renderTable();
+            updateChart();
+        });
+    </script>
+</body>
+</html>
