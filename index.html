@@ -107,9 +107,35 @@
 
         <label for="maquina">Número da Máquina:</label>
         <select id="maquina" required>
+            <!-- Preenchendo as máquinas de AC-01 até AC-28 -->
             <option value="AC-01">AC-01</option>
             <option value="AC-02">AC-02</option>
-            <!-- Adicione todas as opções até AC-28 -->
+            <option value="AC-03">AC-03</option>
+            <option value="AC-04">AC-04</option>
+            <option value="AC-05">AC-05</option>
+            <option value="AC-06">AC-06</option>
+            <option value="AC-07">AC-07</option>
+            <option value="AC-08">AC-08</option>
+            <option value="AC-09">AC-09</option>
+            <option value="AC-10">AC-10</option>
+            <option value="AC-11">AC-11</option>
+            <option value="AC-12">AC-12</option>
+            <option value="AC-13">AC-13</option>
+            <option value="AC-14">AC-14</option>
+            <option value="AC-15">AC-15</option>
+            <option value="AC-16">AC-16</option>
+            <option value="AC-17">AC-17</option>
+            <option value="AC-18">AC-18</option>
+            <option value="AC-19">AC-19</option>
+            <option value="AC-20">AC-20</option>
+            <option value="AC-21">AC-21</option>
+            <option value="AC-22">AC-22</option>
+            <option value="AC-23">AC-23</option>
+            <option value="AC-24">AC-24</option>
+            <option value="AC-25">AC-25</option>
+            <option value="AC-26">AC-26</option>
+            <option value="AC-27">AC-27</option>
+            <option value="AC-28">AC-28</option>
         </select>
 
         <label for="revisora">Nome da Revisora:</label>
@@ -207,100 +233,4 @@
                 return grouped;
             }
 
-            // Função para atualizar o gráfico
-            function updateChart(filteredData = sacariaData) {
-                const groupedData = groupDataByDay(filteredData);
-                const labels = Object.keys(groupedData);
-                const quantities = Object.values(groupedData);
-
-                const ctx = sacariaChart.getContext('2d');
-                if (window.sacariaChartInstance) {
-                    window.sacariaChartInstance.destroy();
-                }
-
-                window.sacariaChartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Quantidade de Sacos de Primeira',
-                            data: quantities,
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        },
-                        plugins: {
-                            annotation: {
-                                annotations: {
-                                    line1: {
-                                        type: 'line',
-                                        yMin: 3000,
-                                        yMax: 3000,
-                                        borderColor: 'red',
-                                        borderWidth: 2,
-                                        label: {
-                                            content: 'Meta: 3000',
-                                            enabled: true,
-                                            position: 'end'
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Atualiza o gráfico com os dados inicialmente carregados
-            updateChart();
-
-            // Adicionar filtro de período
-            const filterGraph = document.getElementById('filterGraph');
-            const startDate = document.getElementById('startDate');
-            const endDate = document.getElementById('endDate');
-
-            filterGraph.addEventListener('click', () => {
-                const start = startDate.value;
-                const end = endDate.value;
-                if (start && end) {
-                    const filteredData = sacariaData.filter(item => {
-                        const itemDate = new Date(item.data);
-                        return itemDate >= new Date(start) && itemDate <= new Date(end);
-                    });
-                    updateChart(filteredData);
-                }
-            });
-
-            // Evento de submissão do formulário
-            const sacariaForm = document.getElementById('sacariaForm');
-            sacariaForm.addEventListener('submit', function (event) {
-                event.preventDefault();
-                const data = document.getElementById('data').value;
-                const turno = document.getElementById('turno').value;
-                const op = document.getElementById('op').value;
-                const cliente = document.getElementById('cliente').value;
-                const quantidade = parseInt(document.getElementById('quantidade').value);
-                const maquina = document.getElementById('maquina').value;
-                const revisora = document.getElementById('revisora').value;
-
-                const newEntry = { data, turno, op, cliente, quantidade, maquina, revisora };
-                saveData(newEntry);
-            });
-
-            // Botão de download de CSV
-            const downloadCSVButton = document.getElementById('downloadCSV');
-            downloadCSVButton.addEventListener('click', downloadCSVFile);
-
-            // Renderizar a tabela de dados ao carregar a página
-            renderTable();
-        });
-    </script>
-</body>
-</html>
+           
