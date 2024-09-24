@@ -55,6 +55,18 @@
             text-align: left;
         }
 
+        tbody {
+            display: block;
+            max-height: 150px; /* Limita a lista a 5 linhas visíveis */
+            overflow-y: scroll;
+        }
+
+        thead, tbody tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
         #downloadCSV {
             margin-top: 20px;
             padding: 10px 20px;
@@ -127,7 +139,13 @@
 
     <button id="downloadCSV">Download CSV</button>
 
+    <!-- Filtro de Período para o Gráfico -->
     <h2>Gráfico - Quantidade de Sacaria de Primeira</h2>
+    <label for="startDate">Início:</label>
+    <input type="date" id="startDate">
+    <label for="endDate">Fim:</label>
+    <input type="date" id="endDate">
+    <button id="filterGraph">Filtrar</button>
     <canvas id="sacariaChart" width="400" height="200"></canvas>
 
     <script>
@@ -137,6 +155,9 @@
             const downloadCSV = document.getElementById('downloadCSV');
             const sacariaChart = document.getElementById('sacariaChart');
             const opInput = document.getElementById('op');
+            const startDate = document.getElementById('startDate');
+            const endDate = document.getElementById('endDate');
+            const filterGraph = document.getElementById('filterGraph');
             
             let sacariaData = JSON.parse(localStorage.getItem('sacariaData')) || [];
 
@@ -197,31 +218,74 @@
                 a.click();
             }
 
+            // Função para filtrar dados por período
+            function filterDataByPeriod(start, end) {
+                return sacariaData.filter(item => {
+                    const itemDate = new Date(item.data);
+                    return itemDate >= new Date(start) && itemDate <= new Date(end);
+                });
+            }
+
+            // Função para agrupar dados por dia e somar a quantidade
+            function groupDataByDay(filteredData) {
+                const grouped = {};
+                filteredData.forEach(item => {
+                    if (!grouped[item.data]) {
+                        grouped[item.data] = 0;
+                    }
+                    grouped[item.data] += item.quantidade;
+                });
+                return grouped;
+            }
+
             // Função para atualizar o gráfico
-            function updateChart() {
-                const dates = sacariaData.map(item => item.data);
-                const quantities = sacariaData.map(item => item.quantidade);
+            function updateChart(filteredData = sacariaData) {
+                const groupedData = groupDataByDay(filteredData);
+                const labels = Object.keys(groupedData);
+                const quantities = Object.values(groupedData);
 
                 const ctx = sacariaChart.getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
+                if (window.sacariaChartInstance) {
+                    window.sacariaChartInstance.destroy();
+                }
+                window.sacariaChartInstance = new Chart(ctx, {
+                    type: 'bar',
                     data: {
-                        labels: dates,
+                        labels: labels,
                         datasets: [{
-                            label: 'Quantidade de Sacaria de Primeira',
+                            label: 'Quantidade de Sacos de Primeira',
                             data: quantities,
-                            borderColor: 'blue',
-                            borderWidth: 2,
-                            fill: false
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
                         }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
                     }
                 });
             }
 
-            // Evento de submissão do formulário
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
-                
+            // Inicializa o gráfico com todos os dados
+            updateChart();
+
+            // Atualiza o gráfico com filtro de período
+            filterGraph.addEventListener('click', () => {
+                const start = startDate.value;
+                const end = endDate.value;
+                if (start && end) {
+                    const filteredData = filterDataByPeriod(start, end);
+                    updateChart(filteredData);
+                }
+            });
+
+            // Evento de submit do formulário
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
                 const data = {
                     data: document.getElementById('data').value,
                     turno: document.getElementById('turno').value,
@@ -231,15 +295,14 @@
                     maquina: document.getElementById('maquina').value,
                     revisora: document.getElementById('revisora').value
                 };
-
                 saveData(data);
             });
 
+            // Evento de download do CSV
             downloadCSV.addEventListener('click', downloadCSVFile);
 
-            // Inicializar a tabela e gráfico ao carregar a página
+            // Renderiza os dados existentes ao carregar a página
             renderTable();
-            updateChart();
         });
     </script>
 </body>
