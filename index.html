@@ -224,7 +224,7 @@ document.write(`<option value="AD-02">AD-02</option>`);
                 a.click();
             }
 
-           // Função para agrupar dados por dia e somar a quantidade
+// Função para agrupar dados por dia e somar a quantidade
 function groupDataByDay(filteredData) {
     const grouped = {};
     filteredData.forEach(item => {
@@ -263,42 +263,72 @@ function updateChart(filteredData = sacariaData) {
             datasets: [{
                 label: 'Quantidade de Sacos de Primeira',
                 data: quantities,
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
+                backgroundColor: 'rgba(54, 162, 235, 0.6)', // Azul vibrante e translúcido para as barras
+                borderColor: 'rgba(54, 162, 235, 1)', // Azul sólido para as bordas das barras
+                borderWidth: 2
             }]
         },
         options: {
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#4B0082', // Cor roxa escura para os números do eixo Y
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)' // Linhas de grade leves e discretas
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#4B0082', // Cor roxa escura para os números do eixo X
+                    }
                 }
             },
             plugins: {
+                legend: {
+                    labels: {
+                        color: '#000080', // Cor azul escura para a legenda
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    }
+                },
                 annotation: {
                     annotations: {
                         line1: {
                             type: 'line',
                             yMin: 600,
                             yMax: 600,
-                            borderColor: 'red',
-                            borderWidth: 2,
+                            borderColor: 'rgba(255, 99, 132, 1)', // Cor vermelho vivo para a linha da meta
+                            borderWidth: 3,
                             label: {
                                 content: 'Meta: 600',
                                 enabled: true,
-                                position: 'end'
+                                position: 'end',
+                                backgroundColor: 'rgba(255, 99, 132, 0.8)', // Fundo vermelho vibrante
+                                color: 'white', // Cor do texto branca para contraste
+                                font: {
+                                    weight: 'bold'
+                                }
                             }
                         },
                         line2: {
                             type: 'line',
                             yMin: average,
                             yMax: average,
-                            borderColor: 'blue',
-                            borderWidth: 2,
+                            borderColor: 'rgba(75, 192, 192, 1)', // Cor verde vibrante para a linha da média
+                            borderWidth: 3,
                             label: {
                                 content: `Média: ${average.toFixed(2)}`,
                                 enabled: true,
-                                position: 'end'
+                                position: 'end',
+                                backgroundColor: 'rgba(75, 192, 192, 0.8)', // Fundo verde vibrante
+                                color: 'white', // Texto branco para contraste
+                                font: {
+                                    weight: 'bold'
+                                }
                             }
                         }
                     }
@@ -310,6 +340,7 @@ function updateChart(filteredData = sacariaData) {
 
 // Atualiza o gráfico com os dados inicialmente carregados
 updateChart();
+
 
             // Adicionar filtro de período
             const filterGraph = document.getElementById('filterGraph');
