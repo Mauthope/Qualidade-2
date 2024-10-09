@@ -265,7 +265,10 @@ function updateChart(filteredData = sacariaData) {
                 data: quantities,
                 backgroundColor: 'rgba(54, 162, 235, 0.6)', // Azul vibrante e translúcido para as barras
                 borderColor: 'rgba(54, 162, 235, 1)', // Azul sólido para as bordas das barras
-                borderWidth: 2
+                borderWidth: 2,
+                borderRadius: 10, // Cantos arredondados das barras
+                barPercentage: 0.8, // Ajusta a largura das barras para não ficarem muito juntas
+                categoryPercentage: 0.7 // Ajusta o espaçamento entre categorias
             }]
         },
         options: {
@@ -340,6 +343,7 @@ function updateChart(filteredData = sacariaData) {
 
 // Atualiza o gráfico com os dados inicialmente carregados
 updateChart();
+
 
 
             // Adicionar filtro de período
