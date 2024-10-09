@@ -224,71 +224,92 @@ document.write(`<option value="AD-02">AD-02</option>`);
                 a.click();
             }
 
-            // Função para agrupar dados por dia e somar a quantidade
-            function groupDataByDay(filteredData) {
-                const grouped = {};
-                filteredData.forEach(item => {
-                    if (!grouped[item.data]) {
-                        grouped[item.data] = 0;
-                    }
-                    grouped[item.data] += item.quantidade;
-                });
-                return grouped;
-            }
+           // Função para agrupar dados por dia e somar a quantidade
+function groupDataByDay(filteredData) {
+    const grouped = {};
+    filteredData.forEach(item => {
+        if (!grouped[item.data]) {
+            grouped[item.data] = 0;
+        }
+        grouped[item.data] += item.quantidade;
+    });
+    return grouped;
+}
 
-            // Função para atualizar o gráfico
-            function updateChart(filteredData = sacariaData) {
-                const groupedData = groupDataByDay(filteredData);
-                const labels = Object.keys(groupedData);
-                const quantities = Object.values(groupedData);
+// Função para calcular a média
+function calculateAverage(quantities) {
+    const total = quantities.reduce((sum, value) => sum + value, 0);
+    return total / quantities.length;
+}
 
-                const ctx = sacariaChart.getContext('2d');
-                if (window.sacariaChartInstance) {
-                    window.sacariaChartInstance.destroy();
+// Função para atualizar o gráfico
+function updateChart(filteredData = sacariaData) {
+    const groupedData = groupDataByDay(filteredData);
+    const labels = Object.keys(groupedData);
+    const quantities = Object.values(groupedData);
+
+    // Calcula a média das quantidades
+    const average = calculateAverage(quantities);
+
+    const ctx = sacariaChart.getContext('2d');
+    if (window.sacariaChartInstance) {
+        window.sacariaChartInstance.destroy();
+    }
+
+    window.sacariaChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Quantidade de Sacos de Primeira',
+                data: quantities,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
-
-                window.sacariaChartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Quantidade de Sacos de Primeira',
-                            data: quantities,
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true
+            },
+            plugins: {
+                annotation: {
+                    annotations: {
+                        line1: {
+                            type: 'line',
+                            yMin: 600,
+                            yMax: 600,
+                            borderColor: 'red',
+                            borderWidth: 2,
+                            label: {
+                                content: 'Meta: 600',
+                                enabled: true,
+                                position: 'end'
                             }
                         },
-                        plugins: {
-                            annotation: {
-                                annotations: {
-                                    line1: {
-                                        type: 'line',
-                                        yMin: 600,
-                                        yMax: 600,
-                                        borderColor: 'red',
-                                        borderWidth: 2,
-                                        label: {
-                                            content: 'Meta: 60',
-                                            enabled: true,
-                                            position: 'end'
-                                        }
-                                    }
-                                }
+                        line2: {
+                            type: 'line',
+                            yMin: average,
+                            yMax: average,
+                            borderColor: 'blue',
+                            borderWidth: 2,
+                            label: {
+                                content: `Média: ${average.toFixed(2)}`,
+                                enabled: true,
+                                position: 'end'
                             }
                         }
                     }
-                });
+                }
             }
+        }
+    });
+}
 
-            // Atualiza o gráfico com os dados inicialmente carregados
-            updateChart();
+// Atualiza o gráfico com os dados inicialmente carregados
+updateChart();
 
             // Adicionar filtro de período
             const filterGraph = document.getElementById('filterGraph');
